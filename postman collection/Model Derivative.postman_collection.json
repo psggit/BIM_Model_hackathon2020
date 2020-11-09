@@ -1,0 +1,908 @@
+{
+	"info": {
+		"_postman_id": "f88ba6e4-8b36-49e7-ae9d-b0c5185ddbdc",
+		"name": "Model Derivative",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Tutorial 6 - Extract Geometry from a Source File",
+			"item": [
+				{
+					"name": "Task 1 - Obtain an Access Token",
+					"item": [
+						{
+							"name": "Get an Access Token",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"id": "cbeef3d8-ec31-4701-bf60-2ad4332742f0",
+										"exec": [
+											"var body = JSON.parse(responseBody);",
+											"pm.environment.set(\"access_token\", body[\"access_token\"]);"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/x-www-form-urlencoded"
+									}
+								],
+								"body": {
+									"mode": "urlencoded",
+									"urlencoded": [
+										{
+											"key": "client_id",
+											"value": "{{client_id}}",
+											"type": "text"
+										},
+										{
+											"key": "client_secret",
+											"value": "{{client_secret}}",
+											"type": "text"
+										},
+										{
+											"key": "grant_type",
+											"value": "client_credentials",
+											"type": "text"
+										},
+										{
+											"key": "scope",
+											"value": "code:all data:write data:read bucket:create bucket:delete bucket:read",
+											"type": "text"
+										}
+									]
+								},
+								"url": {
+									"raw": "https://developer.api.autodesk.com/authentication/v1/authenticate",
+									"protocol": "https",
+									"host": [
+										"developer",
+										"api",
+										"autodesk",
+										"com"
+									],
+									"path": [
+										"authentication",
+										"v1",
+										"authenticate"
+									]
+								},
+								"description": "[See Documentation](https://forge.autodesk.com/en/docs/oauth/v2/reference/http/authenticate-POST/)"
+							},
+							"response": []
+						}
+					],
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"id": "e46c0f9a-5b13-4e1e-80cc-ddb265a50d8f",
+								"type": "text/javascript",
+								"exec": [
+									""
+								]
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"id": "190c87ad-b1a7-4325-a0ac-6f0d3696f254",
+								"type": "text/javascript",
+								"exec": [
+									""
+								]
+							}
+						}
+					],
+					"protocolProfileBehavior": {},
+					"_postman_isSubFolder": true
+				},
+				{
+					"name": "Task 2 - Upload Source File to OSS",
+					"item": [
+						{
+							"name": "Create a Bucket",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"id": "7d06b1fc-9b81-4fc5-85ed-e300a221a5a2",
+										"exec": [
+											""
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									},
+									{
+										"key": "Authorization",
+										"value": "Bearer {{access_token}}"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n\t\"bucketKey\": \"{{ossBucketKey}}\",\n\t\"access\": \"full\",\n\t\"policyKey\": \"transient\"\n}\n"
+								},
+								"url": {
+									"raw": "https://developer.api.autodesk.com/oss/v2/buckets",
+									"protocol": "https",
+									"host": [
+										"developer",
+										"api",
+										"autodesk",
+										"com"
+									],
+									"path": [
+										"oss",
+										"v2",
+										"buckets"
+									]
+								},
+								"description": "[See documentation](https://forge.autodesk.com/en/docs/data/v2/reference/http/buckets-POST/)"
+							},
+							"response": []
+						},
+						{
+							"name": "Upload Input File to OSS",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"id": "31d5eaf8-fa17-430c-b310-160e4974199a",
+										"exec": [
+											"var body = JSON.parse(responseBody);",
+											"pm.environment.set(\"t6_ossSourceFileObjectKey\", body[\"objectKey\"]);",
+											"pm.environment.set(\"t6_ossSourceFileURN\", body[\"objectId\"]);",
+											"var encoded_urn=btoa(body[\"objectId\"]);",
+											"pm.environment.set(\"t6_ossEncodedSourceFileURN\", encoded_urn);"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "PUT",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "Bearer {{access_token}}"
+									}
+								],
+								"body": {
+									"mode": "file",
+									"file": {
+										"src": ""
+									}
+								},
+								"url": {
+									"raw": "https://developer.api.autodesk.com/oss/v2/buckets/{{ossBucketKey}}/objects/{{ossSourceFileObjectKey}}",
+									"protocol": "https",
+									"host": [
+										"developer",
+										"api",
+										"autodesk",
+										"com"
+									],
+									"path": [
+										"oss",
+										"v2",
+										"buckets",
+										"{{ossBucketKey}}",
+										"objects",
+										"{{ossSourceFileObjectKey}}"
+									]
+								},
+								"description": "[See documentation](https://forge.autodesk.com/en/docs/data/v2/reference/http/buckets-:bucketKey-objects-:objectName-PUT/)"
+							},
+							"response": []
+						}
+					],
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"id": "cde179d1-d5b1-4d34-9269-a09564e10788",
+								"type": "text/javascript",
+								"exec": [
+									""
+								]
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"id": "ab50f8e3-67fa-4073-9515-8df8a83ffd73",
+								"type": "text/javascript",
+								"exec": [
+									""
+								]
+							}
+						}
+					],
+					"protocolProfileBehavior": {},
+					"_postman_isSubFolder": true
+				},
+				{
+					"name": "Task 3 - Translate to SVF",
+					"item": [
+						{
+							"name": "Start a Translation Job",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"id": "4a039931-7c26-4436-8292-82b245b2b42e",
+										"exec": [
+											"var body = JSON.parse(responseBody);",
+											"pm.environment.set(\"t6_url_safe_urn_of_source\", body[\"urn\"]);"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"name": "Content-Type",
+										"value": "application/json",
+										"type": "text"
+									},
+									{
+										"key": "Authorization",
+										"value": "Bearer {{access_token}}",
+										"type": "text"
+									},
+									{
+										"key": "x-ads-force",
+										"value": "true",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"input\": {\n        \"urn\": \"{{t6_ossEncodedSourceFileURN}}\",\n        \"rootFilename\": \"Stapler.iam\",\n        \"compressedUrn\": true\n    },\n    \"output\": {\n        \"destination\": {\n            \"region\": \"us\"\n        },\n        \"formats\": [\n            {\n                \"type\": \"svf\",\n                \"views\": [\n                    \"2d\",\n                    \"3d\"\n                ]\n            }\n        ]\n    }\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "https://developer.api.autodesk.com/modelderivative/v2/designdata/job",
+									"protocol": "https",
+									"host": [
+										"developer",
+										"api",
+										"autodesk",
+										"com"
+									],
+									"path": [
+										"modelderivative",
+										"v2",
+										"designdata",
+										"job"
+									]
+								},
+								"description": "[See documentation](https://forge.autodesk.com/en/docs/model-derivative/v2/reference/http/job-POST/)"
+							},
+							"response": []
+						},
+						{
+							"name": "Check Status of Job",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"id": "b53495f7-87fc-4fde-86b6-207f0d769beb",
+										"exec": [
+											"var body = JSON.parse(responseBody);",
+											"d_data=body[\"derivatives\"];",
+											"",
+											"let progress=body[\"progress\"];",
+											"",
+											"if (progress===\"complete\") {",
+											"",
+											"let envariable='dv_urn_';",
+											"let dv_children=d_data[0][\"children\"];",
+											"",
+											"    for (var i = 0; i < dv_children.length; i++)",
+											"    {",
+											"        let dv_urn=dv_children[i][\"urn\"];",
+											"        ",
+											"        envariable='dv_urn_'+i;",
+											"        postman.setEnvironmentVariable(envariable, dv_urn);",
+											"    }",
+											"}"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "Bearer {{access_token}}"
+									}
+								],
+								"url": {
+									"raw": "https://developer.api.autodesk.com/modelderivative/v2/designdata/{{t6_url_safe_urn_of_source}}/manifest",
+									"protocol": "https",
+									"host": [
+										"developer",
+										"api",
+										"autodesk",
+										"com"
+									],
+									"path": [
+										"modelderivative",
+										"v2",
+										"designdata",
+										"{{t6_url_safe_urn_of_source}}",
+										"manifest"
+									]
+								},
+								"description": "[See documentation](https://forge.autodesk.com/en/docs/model-derivative/v2/reference/http/urn-manifest-GET/)"
+							},
+							"response": []
+						}
+					],
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"id": "0581f3a0-5163-4cf2-9e28-78332b8ce589",
+								"type": "text/javascript",
+								"exec": [
+									""
+								]
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"id": "ad9ab42e-67e1-4166-afc3-1b42fe1a264d",
+								"type": "text/javascript",
+								"exec": [
+									""
+								]
+							}
+						}
+					],
+					"protocolProfileBehavior": {},
+					"_postman_isSubFolder": true
+				},
+				{
+					"name": "Task 4 - Retrieve Metadata",
+					"item": [
+						{
+							"name": "Retrieve a List of Viewables",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"id": "70be2d2e-4328-4cbd-9c2b-3ae9c70ef2b2",
+										"exec": [
+											"var body = JSON.parse(responseBody);",
+											"var body_data=body[\"data\"];",
+											"",
+											"",
+											"let envariable=' ';",
+											"let md_children=body_data[\"metadata\"];",
+											"",
+											"    for (var i = 0; i < md_children.length; i++)",
+											"    {",
+											"        let md_guid=md_children[i][\"guid\"];",
+											"        ",
+											"        envariable='metadata_guid_'+i;",
+											"        postman.setEnvironmentVariable(envariable, md_guid);",
+											"    }",
+											""
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "Bearer {{access_token}}",
+										"type": "text"
+									}
+								],
+								"url": {
+									"raw": "https://developer.api.autodesk.com/modelderivative/v2/designdata/{{t6_url_safe_urn_of_source}}/metadata",
+									"protocol": "https",
+									"host": [
+										"developer",
+										"api",
+										"autodesk",
+										"com"
+									],
+									"path": [
+										"modelderivative",
+										"v2",
+										"designdata",
+										"{{t6_url_safe_urn_of_source}}",
+										"metadata"
+									]
+								},
+								"description": "[See documentation](https://forge.autodesk.com/en/docs/model-derivative/v2/reference/http/urn-metadata-GET/)"
+							},
+							"response": []
+						},
+						{
+							"name": "List Object Tree",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"id": "b92daaf3-ef1f-47fa-a9d8-c411b0ef7245",
+										"exec": [
+											""
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "Bearer {{access_token}}",
+										"type": "text"
+									}
+								],
+								"url": {
+									"raw": "https://developer.api.autodesk.com/modelderivative/v2/designdata/{{t6_url_safe_urn_of_source}}/metadata/{{metadata_guid_0}}",
+									"protocol": "https",
+									"host": [
+										"developer",
+										"api",
+										"autodesk",
+										"com"
+									],
+									"path": [
+										"modelderivative",
+										"v2",
+										"designdata",
+										"{{t6_url_safe_urn_of_source}}",
+										"metadata",
+										"{{metadata_guid_0}}"
+									]
+								},
+								"description": "[See documentation](https://forge.autodesk.com/en/docs/model-derivative/v2/reference/http/urn-metadata-guid-GET/)"
+							},
+							"response": []
+						}
+					],
+					"protocolProfileBehavior": {},
+					"_postman_isSubFolder": true
+				},
+				{
+					"name": "Task 5 - Extract Geometry",
+					"item": [
+						{
+							"name": "Translate Specific Objects to OBJ",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"id": "9aa3d90e-2525-49ee-b543-0eafc232a918",
+										"exec": [
+											""
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"name": "Content-Type",
+										"type": "text",
+										"value": "application/json"
+									},
+									{
+										"key": "Authorization",
+										"type": "text",
+										"value": "Bearer {{access_token}}"
+									},
+									{
+										"key": "x-ads-force",
+										"type": "text",
+										"value": "true"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"input\": {\n        \"urn\": \"{{t6_ossEncodedSourceFileURN}}\"\n    },\n    \"output\": {\n        \"destination\": {\n            \"region\": \"us\"\n        },\n        \"formats\": [\n            {\n                \"type\": \"obj\",\n                \"advanced\": {\n                \t\"modelGuid\":\"{{metadata_guid_0}}\",\n                \t\"objectIds\" : [4,5]\n                }\n            }\n        ]\n    }\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "https://developer.api.autodesk.com/modelderivative/v2/designdata/job",
+									"protocol": "https",
+									"host": [
+										"developer",
+										"api",
+										"autodesk",
+										"com"
+									],
+									"path": [
+										"modelderivative",
+										"v2",
+										"designdata",
+										"job"
+									]
+								},
+								"description": "[See documentation](https://forge.autodesk.com/en/docs/model-derivative/v2/reference/http/job-POST/)"
+							},
+							"response": []
+						},
+						{
+							"name": "Check Status of Job",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"id": "4c95e80d-b0b1-4d19-aff1-2bcae429eb11",
+										"exec": [
+											"var body = JSON.parse(responseBody);",
+											"d_data = body[\"derivatives\"];",
+											"",
+											"if (d_data[1][\"progress\"] === \"complete\") {",
+											"",
+											"    let envariable = ' ';",
+											"    let dv_children = d_data[1][\"children\"];",
+											"",
+											"    for (var i = 0; i < dv_children.length; i++) {",
+											"        let dv_urn = dv_children[i][\"urn\"];",
+											"",
+											"        envariable = 't6_obj_urn_' + i;",
+											"        postman.setEnvironmentVariable(envariable, dv_urn);",
+											"    }",
+											"",
+											"}",
+											"",
+											""
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "Bearer {{access_token}}"
+									}
+								],
+								"url": {
+									"raw": "https://developer.api.autodesk.com/modelderivative/v2/designdata/{{t6_ossEncodedSourceFileURN}}/manifest",
+									"protocol": "https",
+									"host": [
+										"developer",
+										"api",
+										"autodesk",
+										"com"
+									],
+									"path": [
+										"modelderivative",
+										"v2",
+										"designdata",
+										"{{t6_ossEncodedSourceFileURN}}",
+										"manifest"
+									]
+								},
+								"description": "[See documentation](https://forge.autodesk.com/en/docs/model-derivative/v2/reference/http/urn-manifest-GET/)"
+							},
+							"response": []
+						},
+						{
+							"name": "Download Extracted Geometry",
+							"request": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "Authorization",
+										"type": "text",
+										"value": "Bearer {{access_token}}"
+									}
+								],
+								"url": {
+									"raw": "https://developer.api.autodesk.com/modelderivative/v2/designdata/{{t6_url_safe_urn_of_source}}/manifest/{{t6_obj_urn_0}}",
+									"protocol": "https",
+									"host": [
+										"developer",
+										"api",
+										"autodesk",
+										"com"
+									],
+									"path": [
+										"modelderivative",
+										"v2",
+										"designdata",
+										"{{t6_url_safe_urn_of_source}}",
+										"manifest",
+										"{{t6_obj_urn_0}}"
+									]
+								},
+								"description": "[See documentation](https://forge.autodesk.com/en/docs/model-derivative/v2/reference/http/urn-manifest-derivativeurn-GET/)"
+							},
+							"response": []
+						}
+					],
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"id": "78a5b6a7-5e01-41fd-bdf5-31b6be8f6e5c",
+								"type": "text/javascript",
+								"exec": [
+									""
+								]
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"id": "dc1b0efc-d4ac-4da9-a5a3-8e958316a296",
+								"type": "text/javascript",
+								"exec": [
+									""
+								]
+							}
+						}
+					],
+					"protocolProfileBehavior": {},
+					"_postman_isSubFolder": true
+				}
+			],
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"id": "b9732c81-951d-475d-8f34-10222478ec0f",
+						"type": "text/javascript",
+						"exec": [
+							""
+						]
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"id": "88fc9957-e04c-42a8-8ebb-cfd3b0364ce5",
+						"type": "text/javascript",
+						"exec": [
+							""
+						]
+					}
+				}
+			],
+			"protocolProfileBehavior": {}
+		},
+		{
+			"name": "Extras",
+			"item": [
+				{
+					"name": "Get Bucket Details",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "https://developer.api.autodesk.com/oss/v2/buckets/{{ossBucketKey}}/details",
+							"protocol": "https",
+							"host": [
+								"developer",
+								"api",
+								"autodesk",
+								"com"
+							],
+							"path": [
+								"oss",
+								"v2",
+								"buckets",
+								"{{ossBucketKey}}",
+								"details"
+							]
+						},
+						"description": "[See documentation](https://forge.autodesk.com/en/docs/data/v2/reference/http/buckets-:bucketKey-details-GET/)"
+					},
+					"response": []
+				},
+				{
+					"name": "List Objects in  Bucket",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"type": "text",
+								"value": "Bearer {{access_token}}"
+							}
+						],
+						"url": {
+							"raw": "https://developer.api.autodesk.com/oss/v2/buckets/{{ossBucketKey}}/objects",
+							"protocol": "https",
+							"host": [
+								"developer",
+								"api",
+								"autodesk",
+								"com"
+							],
+							"path": [
+								"oss",
+								"v2",
+								"buckets",
+								"{{ossBucketKey}}",
+								"objects"
+							]
+						},
+						"description": "[See documentation](https://forge.autodesk.com/en/docs/data/v2/reference/http/buckets-:bucketKey-details-GET/)"
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Manifest",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "1158b8af-6bab-4810-ac88-be022e1fa5fa",
+								"exec": [
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							}
+						],
+						"url": {
+							"raw": "https://developer.api.autodesk.com/modelderivative/v2/designdata/{{t6_url_safe_urn_of_source}}/manifest",
+							"protocol": "https",
+							"host": [
+								"developer",
+								"api",
+								"autodesk",
+								"com"
+							],
+							"path": [
+								"modelderivative",
+								"v2",
+								"designdata",
+								"{{t6_url_safe_urn_of_source}}",
+								"manifest"
+							]
+						},
+						"description": "[See documentation](https://forge.autodesk.com/en/docs/model-derivative/v2/reference/http/urn-manifest-DELETE/)"
+					},
+					"response": []
+				},
+				{
+					"name": "Delete OSS Bucket",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "f36bbad9-860f-4a75-8be6-fac7f024dada",
+								"exec": [
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"url": {
+							"raw": "https://developer.api.autodesk.com/oss/v2/buckets/{{ossBucketKey}}",
+							"protocol": "https",
+							"host": [
+								"developer",
+								"api",
+								"autodesk",
+								"com"
+							],
+							"path": [
+								"oss",
+								"v2",
+								"buckets",
+								"{{ossBucketKey}}"
+							]
+						},
+						"description": "[See documentation](https://forge.autodesk.com/en/docs/data/v2/reference/http/buckets-:bucketKey-DELETE/)"
+					},
+					"response": []
+				},
+				{
+					"name": "Get Supported Formats",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "https://developer.api.autodesk.com/modelderivative/v2/designdata/formats",
+							"protocol": "https",
+							"host": [
+								"developer",
+								"api",
+								"autodesk",
+								"com"
+							],
+							"path": [
+								"modelderivative",
+								"v2",
+								"designdata",
+								"formats"
+							]
+						},
+						"description": "[See documentation](https://forge.autodesk.com/en/docs/model-derivative/v2/reference/http/formats-GET/)"
+					},
+					"response": []
+				}
+			],
+			"protocolProfileBehavior": {}
+		}
+	],
+	"protocolProfileBehavior": {}
+}

@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <link rel="stylesheet" href="https://developer.api.autodesk.com/modelderivative/v2/viewers/7.*/style.min.css"
+      type="text/css">
+    <script src="https://developer.api.autodesk.com/modelderivative/v2/viewers/7.*/viewer3D.min.js"></script>
+    <script src="https://rawgit.com/moment/moment/2.2.1/min/moment.min.js"></script>
+    <script src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@2.8.0"></script>
+    
+  </head>
+  <body>
+    <div id="MyViewerDiv">
+      <div style="margin: 40px; overflow: scroll;"><canvas id="myChart"></canvas></div>
+    </div>
+   
+    <script>
+      let jsonData = [];
+
+      window.onload = function () {
+        fetchLiveData();
+      }
+
+      setInterval(function () { fetchLiveData(); }, 5000);
+
+      function fetchLiveData() {
+         jQuery.ajax({
+          url: 'http://localhost:8080/digitaltwin/thermostat/thermostat1',
+          success: function (res) {
+           const response = JSON.parse(res)
+            jsonData.push(response);
+            plotGraph()
+          },
+          error: function (error) {
+            console.log("error in fetching live data", error)
+          }
+        });
+      }
+
+      function getXAxisValues(jsonData) {
+        const processedData = jsonData.map((item) => {
+          return moment(item.$metadata.Temperature.lastUpdateTime).format("DD-MM-YYYY")
+        })
+
+        return processedData;
+      }
+
+      function getYAxisValues(jsonData) {
+        const processedData = jsonData.map((item) => {
+          return item.Temperature
+        })
+
+        return processedData;
+      }
+
+      function plotGraph() {
+        var ctx = $("#myChart").get(0).getContext("2d");
+
+        const xaxisData = getXAxisValues(jsonData);
+        const yaxisData = getYAxisValues(jsonData);
+
+        var data = {
+          labels: xaxisData,
+          datasets: [
+            {
+              fill: false,
+              pointRadius: 5,
+              pointHoverRadius: 5,
+              pointHoverBorderWidth: 2,
+              pointColor: "#472E2D",
+              pointHoverBorderColor: "#472E2D",
+              pointBackgroundColor: "#472E2D",
+              pointBorderColor: "#472E2D",
+              pointStrokeColor: "#472E2D",
+              pointHoverBackgroundColor: "#fff",
+              lineTension: 0,
+              borderColor: "#472E2D",
+              pointStrokeColor: "#472E2D",
+              data: yaxisData
+            }
+          ],
+        }
+
+        const options = {
+          title: {
+            display: true,
+            text: 'Monitor Room Temperature',
+            position: 'top'
+          },
+          tooltips: {
+            callbacks: {
+              title: function (tooltipItem) {
+                return "Tempertaure"
+              }
+            },
+            displayColors: false,
+            backgroundColor: "#472E2D",
+            bodyFontColor: "#fff",
+            titleFontColor: "#fff",
+            yPadding: 5,
+            xPadding: 15,
+            mode: 'index',
+            intersect: false
+          },
+          hover: {
+            mode: 'index',
+            intersect: false
+          },
+          legend: {
+            display: false
+          },
+          responsive: true,
+          scales: {
+            yAxes: [
+              {
+                scaleLabel: {
+                  display: true,
+                  labelString: "Temperature(F)",
+                  fontSize: 14
+                }
+              }
+            ],
+            xAxes: [
+              {
+                scaleLabel: {
+                  display: true,
+                  labelString: "Timestamp",
+                  fontSize: 14
+                },
+                ticks: {
+                  autoSkip: true,
+                  maxTicksLimit: 5
+                }
+              }
+            ]
+          },
+        }
+
+        var myNewChart = new Chart(ctx, {
+          type: "line",
+          data: data,
+          options: options
+        });
+      }
+
+      function getForgeToken(callback) {
+        jQuery.ajax({
+          url: '/api/forge/oauth/public',
+          success: function (res) {
+            callback(res.access_token, res.expires_in);
+          }
+        });
+      }
+
+      var viewer;
+      var options = {
+        env: 'AutodeskProduction',
+        api: 'derivativeV2', // TODO: for models uploaded to EMEA change this option to 'derivativeV2_EU'
+        getAccessToken: getForgeToken
+      };
+
+      function getUrlParameter(name) {
+        name = name.replace(/[[]/, '\\[').replace(/[\]]/, '\\]');
+        var regex = new RegExp('[\\?&]' + name + '=([^&#]*)');
+        var results = regex.exec(location.search);
+        return results === null ? '' : decodeURIComponent(results[1].replace(/\+/g, ' '));
+      }
+
+      var documentId = 'urn:' + getUrlParameter('urn');
+      Autodesk.Viewing.Initializer(options, function onInitialized() {
+        // Find the element where the 3d viewer will live.    
+        var htmlElement = document.getElementById('MyViewerDiv');
+        if (htmlElement) {
+          // Create and start the viewer in that element    
+          viewer = new Autodesk.Viewing.GuiViewer3D(htmlElement);
+          viewer.start();
+          // Load the document into the viewer.
+          Autodesk.Viewing.Document.load(documentId, onDocumentLoadSuccess, onDocumentLoadFailure);
+        }
+      });
+
+      function onDocumentLoadSuccess(doc) {
+        // Load the default viewable geometry into the viewer.
+        // Using the doc, we have access to the root BubbleNode,
+        // which references the root node of a graph that wraps each object from the Manifest JSON.
+        var viewable = doc.getRoot().getDefaultGeometry();
+        if (viewable) {
+          viewer.loadDocumentNode(doc, viewable).then(function (result) {
+            console.log('Viewable Loaded!');
+          }).catch(function (err) {
+            console.log('Viewable failed to load.');
+            console.log(err);
+          }
+          )
+        }
+      }
+
+      function onDocumentLoadFailure(viewerErrorCode) {
+        console.error('onDocumentLoadFailure() - errorCode: ' + viewerErrorCode);
+        jQuery('#MyViewerDiv').html('<p>Translation in progress... Please try refreshing the page.</p>');
+      }
+    </script>
+  </body>
+</html>
